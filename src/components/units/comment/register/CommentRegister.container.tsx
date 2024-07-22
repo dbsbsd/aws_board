@@ -1,159 +1,80 @@
-import { useMutation } from "@apollo/client";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BoardCommentUI from "./CommentRegister.presenter";
-import {
-  CREATE_BOARD_COMMENT,
-  FETCH_BOARD_COMMENTS,
-  UPDATE_BOARD_COMMENT,
-} from "./CommentRegister.queries";
-import { ChangeEvent } from "react";
-import {
-  IMutation,
-  IMutationCreateBoardCommentArgs,
-  IMutationUpdateBoardCommentArgs,
-} from "../../../../commons/types/generated/types";
-import {
-  IBoardCommentRegisterProps,
-  IUpdateBoardCommentInputProps,
-} from "./CommentRegister.types";
-import { Modal } from "antd";
+import axios from "axios";
+import { Modal, message } from "antd";
 
-export default function BoardCommentRegister(
-  props: IBoardCommentRegisterProps
-) {
+export default function BoardCommentRegister(props) {
   const router = useRouter();
+  const boardId = router.query.boardId; // boardId를 쿼리에서 가져옵니다.
 
-  const [commentRegister] = useMutation<
-    Pick<IMutation, "createBoardComment">,
-    IMutationCreateBoardCommentArgs
-  >(CREATE_BOARD_COMMENT);
-
-  const [updateBoardComment] = useMutation<
-    Pick<IMutation, "updateBoardComment">,
-    IMutationUpdateBoardCommentArgs
-  >(UPDATE_BOARD_COMMENT);
-
-  const [writer, setWriter] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
-  const [contents, setContents] = useState("");
-  const [star, setStar] = useState(3);
-  const desc = ["terrible", "bad", "normal", "good", "wonderful"];
+  const [content, setContent] = useState("");
 
-  const onChangeWriter = (event: ChangeEvent<HTMLInputElement>) => {
-    setWriter(event.target.value);
+  useEffect(() => {
+    if (props.el) {
+      setNickname(props.el.nickname);
+      setContent(props.el.content);
+    } else {
+      setNickname("");
+      setContent("");
+    }
+  }, [props.el]);
+
+  const onChangeNickname = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNickname(event.target.value);
   };
 
-  const onChangePassword = (event: ChangeEvent<HTMLInputElement>) => {
+  const onChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
   };
 
-  const onChangeContents = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setContents(event.target.value);
-  };
-
-  const onChangeStar = (star: number) => {
-    setStar(star);
+  const onChangeContent = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(event.target.value);
   };
 
   const onClickSubmit = async () => {
-    if (typeof router.query.boardId !== "string") return;
+    if (typeof boardId !== "string") return;
 
-    if (!writer) alert("작성자를 입력해주세요.");
-    if (!password) alert("비밀번호를 입력해주세요.");
-    if (!contents) alert("내용을 입력해주세요.");
-    if (!star) alert("별점을 눌러주세요.");
-    if (writer && password && contents) {
-      try {
-        await commentRegister({
-          variables: {
-            createBoardCommentInput: {
-              writer: writer,
-              password: password,
-              contents: contents,
-              rating: star,
-            },
-            boardId: router.query.boardId, // boardId: String(router.query.boardId),
-          },
-          refetchQueries: [
-            {
-              query: FETCH_BOARD_COMMENTS,
-              variables: { boardId: router.query.boardId },
-            },
-          ],
-        });
-      } catch (error) {
-        console.error(error);
-      }
-      // 등록후 state를 빈값으로 변경하고 value에 넣어줌으로써 등록후에 댓글작성창이 비워지게 됨
-      setWriter("");
+    if (!nickname || !password || !content) {
+      message.error({ content: "모든 필드를 입력해주세요." });
+      return;
+    }
+
+    try {
+      await axios.post(`http://localhost:8181/board/${boardId}/comment`, {
+        nickname: nickname,
+        password: password,
+        content: content,
+      });
+
+      // 등록 후 state를 빈값으로 변경하여 댓글 작성창 비우기
+      setNickname("");
       setPassword("");
-      setContents("");
-    }
-  };
-
-  const onClickUpdate = async () => {
-    const updateBoardCommentInput: IUpdateBoardCommentInputProps = {};
-    if (contents) updateBoardCommentInput.contents = contents;
-    if (star !== props.el?.rating) updateBoardCommentInput.rating = star;
-
-    if (!contents) {
-      Modal.confirm({ content: "수정한 내용이 없습니다." });
-      return;
-    }
-    if (!password) {
-      Modal.warning({ content: "비밀번호를 입력해주세요." });
-      return;
-    }
-
-    if (password && contents) {
-      try {
-        await updateBoardComment({
-          variables: {
-            updateBoardCommentInput: updateBoardCommentInput,
-            password: password,
-            boardCommentId: String(props.el?._id),
-          },
-          refetchQueries: [
-            {
-              query: FETCH_BOARD_COMMENTS,
-              variables: { boardId: router.query.boardId },
-            },
-          ],
-        });
-        // 수정하기 클릭하면 isEdit가 원래 false인 상태로 돌아가야 함
-        // setIseEdit를 props로 넘겨주고 그 값을 바꿔줌으로써 부모의 state가 변경됨
-        props.setIsEdit?.(false); // props.setIsEdit ?? props.setIsEdit(false)
-      } catch (error) {
-        if (error instanceof Error)
-          Modal.warning({
-            content: (
-              <div>
-                <p>비밀번호가 일치하지 않습니다. </p>
-                <p>다시 입력해주세요.</p>
-              </div>
-            ),
-          });
-      }
+      setContent("");
+      message.success({ content: "댓글이 정상적으로 등록되었습니다." });
+      props.fetchBoardComments();
+    } catch (error) {
+      console.error(error);
+      Modal.error({
+        content: "댓글 등록 중 오류가 발생했습니다.",
+      });
     }
   };
 
   return (
     <>
       <BoardCommentUI
-        isEdit={props.isEdit}
+        isEdit={false} // 수정하기 기능이 없으므로 false로 설정
         el={props.el}
-        onChangeWriter={onChangeWriter}
+        onChangeNickname={onChangeNickname}
         onChangePassword={onChangePassword}
-        onChangeContents={onChangeContents}
+        onChangeContent={onChangeContent}
         onClickSubmit={onClickSubmit}
-        onClickUpdate={onClickUpdate}
-        writer={writer}
+        nickname={nickname}
         password={password}
-        contents={contents}
-        onChangeStar={onChangeStar}
-        star={star}
-        desc={desc}
+        content={content}
       />
     </>
   );

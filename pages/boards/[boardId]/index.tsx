@@ -4,12 +4,11 @@ import BoardCommentRegister from "../../../src/components/units/comment/register
 import BoardCommentList from "../../../src/components/units/comment/list/CommentBoardList.container";
 
 export default function BoardsDetailPage() {
-  const router = useRouter();  
+  const router = useRouter();
 
   return (
     <>
       <BoardDetail />
-      <BoardCommentRegister isEdit={false} boardId={router.query.boardId} />
       <BoardCommentList boardId={router.query.boardId} />
     </>
   );

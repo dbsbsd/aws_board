@@ -18,6 +18,8 @@ export default function BoardRegisterUI(props: IBoardRegisterUIProps) {
               type="text"
               placeholder="닉네임을 적어주세요."
               onChange={props.onChangeInputs}
+              defaultValue={props.data?.nickname}
+              readOnly={props.isEdit}
             ></S.InputBox>
             <S.ErrorMessage>{props.nicknameError}</S.ErrorMessage>
           </S.Item>
@@ -39,7 +41,7 @@ export default function BoardRegisterUI(props: IBoardRegisterUIProps) {
             type="text"
             placeholder="제목을 작성해주세요."
             onChange={props.onChangeInputs}
-            defaultValue={props.data?.fetchBoard.title}
+            defaultValue={props.data?.title}
           ></S.InputBoxTitle>
           <S.ErrorMessage>{props.titleError}</S.ErrorMessage>
         </S.TitleInfo>
@@ -49,7 +51,7 @@ export default function BoardRegisterUI(props: IBoardRegisterUIProps) {
             id="content"
             placeholder="내용을 작성해주세요."
             onChange={props.onChangeInputs}
-            defaultValue={props.data?.fetchBoard.content}
+            defaultValue={props.data?.content}
           ></S.TextBoxContents>
           <S.ErrorMessage>{props.contentError}</S.ErrorMessage>
         </S.ContentsInfo>

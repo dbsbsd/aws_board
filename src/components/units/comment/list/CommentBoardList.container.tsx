@@ -2,64 +2,64 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import CommentBoardListItems from "./CommentBoardListItems";
-import { IBoardComment } from "../../../../commons/types/generated/types";
+import BoardCommentRegister from "../register/CommentRegister.container";
+import { message } from "antd"
 
-export default function BoardCommentList({ boardId }) {
+export default function BoardCommentList({ boardId }: { boardId: string }) {
   const router = useRouter();
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState<any[]>([]);
 
-  // useEffect(() => {
-  //   fetchBoardComments();
-  // }, []);
+  useEffect(() => {
+    fetchBoardComments();
+  }, [boardId]);
 
   const fetchBoardComments = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:8181/board/${boardId}/comment`
-      );
-      setComments(response.data);
+      const response = await axios.get(`http://localhost:8181/board/${boardId}/comment`);
+      setComments(response.data); // 배열로 들어오는 댓글 데이터
     } catch (error) {
       console.error("Error fetching board comments:", error);
-    }
-  };
-
-  const onCreateComment = async (newComment: IBoardComment) => {
-    try {
-      await axios.post(`http://localhost:8181/board/${boardId}/comment`, newComment);
-      fetchBoardComments();
-    } catch (error) {
-      console.error("Error creating comment:", error);
     }
   };
 
   const onDeleteComment = async (commentId: string, password: string) => {
     try {
       await axios.post(`http://localhost:8181/board/${boardId}/comment/${commentId}`, {
-        data: {
-          password: password,
-        },
+        password: password,
       });
       fetchBoardComments();
+      message.success({ content: "댓글이 정상적으로 삭제되었습니다." });
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      message.error({ content: "비밀번호가 틀립니다." });
     }
-  };
+  }
 
-  const onUpdateComment = async (commentId: string, updatedComment: IBoardComment) => {
+  const onUpdateComment = async (commentId: string, password: string, content: string) => {
+    
     try {
-      await axios.patch(`http://localhost:8181/board/${boardId}/comment/${commentId}`, updatedComment);
+      await axios.patch(`http://localhost:8181/board/${boardId}/comment/${commentId}`, {
+        password: password,
+        content: content,
+      });
+      message.success({ content: "댓글이 정상적으로 수정되었습니다." });
       fetchBoardComments();
     } catch (error) {
-      console.error("Error updating comment:", error);
+      message.error({ content: "비밀번호가 틀립니다." });
     }
-  };
+  }
+  
 
   return (
-    <CommentBoardListItems
-      comments={comments}
-      onCreateComment={onCreateComment}
-      onDeleteComment={onDeleteComment}
-      onUpdateComment={onUpdateComment}
-    />
+    <>
+      <BoardCommentRegister
+        boardId={boardId}
+        fetchBoardComments={fetchBoardComments}
+      />
+      <CommentBoardListItems
+        comments={comments}
+        onDeleteComment={onDeleteComment}
+        onUpdateComment={onUpdateComment}
+      />
+    </>
   );
 }

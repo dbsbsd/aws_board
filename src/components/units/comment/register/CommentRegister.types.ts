@@ -1,29 +1,19 @@
-import { ChangeEvent, Dispatch, SetStateAction } from "react";
+import { ChangeEvent } from "react";
 import { IBoardComment } from "../../../../commons/types/generated/types";
 
 export interface IBoardCommentRegisterUIProps {
-  isEdit: boolean;
+  isEdit: false; // 수정하기 기능이 없으므로 항상 false
   el?: IBoardComment;
-  onChangeWriter: (event: ChangeEvent<HTMLInputElement>) => void;
+  onChangeNickname: (event: ChangeEvent<HTMLInputElement>) => void;
   onChangePassword: (event: ChangeEvent<HTMLInputElement>) => void;
-  onChangeContents: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+  onChangeContent: (event: ChangeEvent<HTMLTextAreaElement>) => void;
   onClickSubmit: () => void;
-  onClickUpdate: () => void;
-  writer: string;
+  nickname: string;
   password: string;
-  contents: string;
-  onChangeStar: (star: number) => void;
-  star: number;
-  desc: string[];
+  content: string;
 }
 
 export interface IBoardCommentRegisterProps {
   el?: IBoardComment;
-  isEdit: boolean;
-  setIsEdit?: Dispatch<SetStateAction<boolean>>;
-}
-
-export interface IUpdateBoardCommentInputProps {
-  contents?: string;
-  rating?: number;
+  isEdit: false; // 수정하기 기능이 없으므로 항상 false
 }

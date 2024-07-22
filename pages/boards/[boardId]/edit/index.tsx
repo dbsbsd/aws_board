@@ -1,50 +1,46 @@
-import { gql, useQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import {
-  IQuery,
-  IQueryFetchBoardArgs,
-} from "../../../../src/commons/types/generated/types";
+import axios from "axios"; // axios 임포트
 import BoardRegister from "../../../../src/components/units/boards/register/BoardRegister.container";
 
-const FETCH_BOARD = gql`
-  query fetchBoard($boardId: ID!) {
-    fetchBoard(boardId: $boardId) {
-      _id
-      writer
-      title
-      contents
-      youtubeUrl
-      boardAddress {
-        zipcode
-        address
-        addressDetail
-      }
-      createdAt
-      images
-    }
-  }
-`;
 export default function BoardEditPage() {
   const router = useRouter();
+  const [data, setData] = useState({
+    nickname: "",
+    title: "",
+    content: "",
+  });
 
-  // string이 아니면
-  // if (typeof router.query.boardId !== "string") {
-  //   void router.push("/");
-  //   return <></>;
-  // }
+  useEffect(() => {
+    const fetchData = async () => {
+      if (router.query.boardId) {
+        try {
+          const response = await axios.get(`http://localhost:8181/board/${router.query.boardId}`);
+          const boardData = response.data;
 
-  // string이면
-  const { data } = useQuery<Pick<IQuery, "fetchBoard">, IQueryFetchBoardArgs>(
-    FETCH_BOARD,
-    {
-      variables: {
-        boardId: String(router.query.boardId),
-      },
-    }
-  );
+          // 필요한 데이터를 상태에 저장
+          setData({
+            nickname: boardData.nickname,
+            title: boardData.title,
+            content: boardData.content,
+          });
+        } catch (error) {
+          console.error("Error fetching board data:", error);
+        }
+      }
+    };
+
+    fetchData();
+  }, [router.query.boardId]);
 
   return (
-    <>{BoardRegister({ isEdit: true, data: data })}</>
-    // <BoardRegister isEdit={true} data={data} />
+    <BoardRegister
+      isEdit={true}
+      data={{
+        nickname: data.nickname,
+        title: data.title,
+        content: data.content,
+      }}
+    />
   );
 }

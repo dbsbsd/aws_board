@@ -1,116 +1,116 @@
 import { Modal } from "antd";
-import {
-  IBoarCommentsUIProps
-} from "./CommentBoardList.types";
-import * as S from "./CommentBoardListStyles";
-import BoardCommentRegister from "../register/CommentRegister.container";
 import { useState } from "react";
-import { useRouter } from "next/router";
+import * as S from "./CommentBoardListStyles";
 import { getDate } from "../../../../commons/utils/date";
 
-export default function CommentBoardListItems(props: IBoarCommentsUIProps) {
-  const router = useRouter();
+export default function CommentBoardListItems(props) {
+  const { comments, onDeleteComment, onUpdateComment } = props;
+  
   const [isEdit, setIsEdit] = useState(false);
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   const [myBoardCommentId, setMyBoardCommentId] = useState("");
   const [myPassword, setMyPassword] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [password, setPassword] = useState("");
+  const [content, setContent] = useState("");
 
   const onClickDeleteComment = async () => {
-    try {
-      await props.onDeleteComment(myBoardCommentId, myPassword);
-      onToggleModal();
-    } catch (error) {
-      if (error instanceof Error)
-        Modal.warning({
-          content: (
-            <div>
-              <p>비밀번호가 일치하지 않습니다.</p>
-              <p>다시 입력해주세요.</p>
-            </div>
-          ),
-        });
-    }
+    await onDeleteComment(myBoardCommentId, myPassword);
+    setIsOpenDeleteModal(false);
+    setMyPassword("");
   };
 
-  const onClickDeleteCommentModal = (event: React.MouseEvent<HTMLImageElement>) => {
-    setMyBoardCommentId(event.currentTarget.id);
-    onToggleModal();
-  };
-
-  const onChangeDeletePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setMyPassword(event.target.value);
-  };
-
-  const onToggleModal = () => {
-    setIsOpenDeleteModal((prev) => !prev);
-  };
-
-  const onClickUpdateComment = () => {
-    setIsEdit(true);
-  };
-
-  const onCancelUpdate = () => {
-    setIsEdit(false);
-  };
-
-  const onSubmitUpdate = (updatedComment: IBoardComment) => {
-    props.onUpdateComment(props.el._id, updatedComment);
+  const handleUpdateClick = async (commentId: string) => {
+    onUpdateComment(commentId, password, content);
     setIsEdit(false);
   };
 
   return (
     <>
-      {isOpenDeleteModal && (
-        <Modal
-          open={isOpenDeleteModal}
-          onOk={onClickDeleteComment}
-          onCancel={onToggleModal}
-        >
-          <S.PwdInput
-            type="password"
-            placeholder="비밀번호를 입력하시면 댓글이 삭제됩니다."
-            onChange={onChangeDeletePassword}
-          />
-        </Modal>
-      )}
-
-      {props.data.map((board, index) => (
-      <S.Wrapper key={board.id}>
-        {!isEdit && (
-          <>
-            <S.CommentBox>
-              <S.Avatar src="/BoardComment/avatar.png/" />
-              <S.MainWrapper>
-                <S.WriterWrapper>
-                  <S.Writer>{board.nickname}</S.Writer>
-                </S.WriterWrapper>
-                <S.ContentsBox>{board.content}</S.ContentsBox>
-              </S.MainWrapper>
-              <S.IconBox>
-                <S.UpdateIcon
-                  onClick={onClickUpdateComment}
-                  src="/BoardComment/option_update_icon.png/"
-                />
-                <S.DeleteIcon
-                  id={board.id}
-                  onClick={onClickDeleteCommentModal}
-                  src="/BoardComment/option_delete_icon.png"
-                />
-              </S.IconBox>
-            </S.CommentBox>
-            <S.DateBox>{getDate(board.createdAt)}</S.DateBox>
-          </>
-        )}
-        {isEdit && (
-          <BoardCommentRegister
-            isEdit={isEdit}
-            setIsEdit={setIsEdit}
-            onCancelUpdate={onCancelUpdate}
-            onSubmitUpdate={onSubmitUpdate}
-          />
-        )}
+      <S.Wrapper>
+        {comments.map((comment) => (
+          <S.Wrapper key={comment.id}>
+            {isEdit === comment.id ? (
+              // 수정 모드일 때
+              <>
+                <S.InputWrapper>
+                  <S.Input
+                    onChange={(e) => setNickname(e.target.value)}
+                    type="text"
+                    placeholder="작성자"
+                    value={nickname}
+                    readOnly={true}
+                  />
+                  <S.Input
+                    onChange={(e) => setPassword(e.target.value)}
+                    type="password"
+                    placeholder="비밀번호"
+                    value={password}
+                  />
+                </S.InputWrapper>
+                <S.ContentsWrapper>
+                  <S.Contents
+                    onChange={(e) => setContent(e.target.value)}
+                    maxLength={100}
+                    value={content}
+                  />
+                </S.ContentsWrapper>
+                <S.BottomWrapper>
+                  <S.ContentsLength>
+                    {content.length}/100
+                  </S.ContentsLength>
+                  <S.Button onClick={() => handleUpdateClick(comment.id)}>
+                    수정하기
+                  </S.Button>
+                </S.BottomWrapper>
+              </>
+            ) : (
+              // 댓글 표시 모드일 때
+              <S.CommentBox>
+                <S.Avatar src="/BoardComment/avatar.png" />
+                <S.MainWrapper>
+                  <S.WriterWrapper>
+                    <S.Writer>{comment.nickname}</S.Writer>
+                  </S.WriterWrapper>
+                  <S.ContentsBox>{comment.content}</S.ContentsBox>
+                </S.MainWrapper>
+                <S.IconBox>
+                  <S.UpdateIcon
+                    onClick={() => {
+                      setIsEdit(comment.id); // 수정 모드로 전환
+                      setNickname(comment.nickname);
+                      setPassword(""); // 비밀번호 초기화
+                      setContent(comment.content);
+                    }}
+                    src="/BoardComment/option_update_icon.png"
+                  />
+                  <S.DeleteIcon
+                    onClick={() => {
+                      setMyBoardCommentId(comment.id);
+                      setIsOpenDeleteModal(true);
+                    }}
+                    src="/BoardComment/option_delete_icon.png"
+                  />
+                </S.IconBox>
+              </S.CommentBox>
+            )}
+            <S.DateBox>{getDate(comment.createdAt)}</S.DateBox>
+          </S.Wrapper>
+        ))}
       </S.Wrapper>
-    ))}
+
+      <Modal
+        open={isOpenDeleteModal}
+        onOk={onClickDeleteComment}
+        onCancel={() => setIsOpenDeleteModal(false)}
+      >
+        <S.PwdInput
+          type="password"
+          placeholder="비밀번호를 입력하시면 댓글이 삭제됩니다."
+          onChange={(e) => setMyPassword(e.target.value)}
+          value={myPassword}
+        />
+      </Modal>
     </>
   );
 }

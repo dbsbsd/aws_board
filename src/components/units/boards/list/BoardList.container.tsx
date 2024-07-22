@@ -11,7 +11,6 @@ export default function Boards() {
   const fetchBoards = async () => {
     try {
       const response = await axios.get("http://localhost:8181/board");
-      console.log(response.data.content);
       setData(response.data.content);
     } catch (error) {
       console.error("Error fetching boards:", error);

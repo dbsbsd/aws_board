@@ -3,7 +3,6 @@ import { IQuery } from "../../../../commons/types/generated/types";
 
 export interface IBoardRegisterProps {
 isEdit: boolean;
-data?: Pick<IQuery, "fetchBoard">;
 }
 
 // 게시글 수정할 때 데이터 타입
@@ -39,7 +38,11 @@ onClickUpdate: () => void;
 onToggleModal: () => void;
 isActive: boolean;
 isEdit: boolean;
-data?: Pick<IQuery, "fetchBoard">;
+data?: {
+    title?: string;
+    content?: string;
+    nickname?: string;
+}
 isModalOpen: boolean;
 // zipcode: string;
 // address: string;

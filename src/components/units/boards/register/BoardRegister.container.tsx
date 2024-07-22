@@ -120,8 +120,8 @@ export default function BoardRegister(props: IBoardRegisterProps) {
       });
 
       const result = response.data;
-      console.log("Response:", result);
-      router.push(`/boards/${result._id}`);
+      message.success({ content: "게시물이 등록되었습니다." });
+      router.push(`/boards/${result}`);
     } catch (error) {
       alert(error);
     }
@@ -139,6 +139,9 @@ export default function BoardRegister(props: IBoardRegisterProps) {
       return;
     }
 
+    const currentTitle = inputs.title || props.data?.title;
+    const currentContent = inputs.content || props.data?.content;
+
     if (
       !inputs.title &&
       !inputs.content
@@ -153,8 +156,8 @@ export default function BoardRegister(props: IBoardRegisterProps) {
     }
 
     const updateBoardInput: IVariables = {};
-    if (inputs.title) updateBoardInput.title = inputs.title;
-    if (inputs.content) updateBoardInput.content = inputs.content;
+    if (currentTitle) updateBoardInput.title = currentTitle;
+    if (currentContent) updateBoardInput.content = currentContent;
     // if (address || zipcode || inputs.addressDetail) {
     //   updateBoardInput.boardAddress = {};
     //   if (zipcode) updateBoardInput.boardAddress.zipcode = zipcode;
@@ -163,15 +166,15 @@ export default function BoardRegister(props: IBoardRegisterProps) {
     //     updateBoardInput.boardAddress.addressDetail = inputs.addressDetail;
     // }
     // if (isChangeFiles) updateBoardInput.images = fileUrls;
-    console.log(updateBoardInput);
 
     try {
       const response = await axios.patch(`http://localhost:8181/board/${router.query.boardId}`, {
-        title: inputs.title,
-        content: inputs.content,
+        title: updateBoardInput.title,
+        content: updateBoardInput.content,
         password: inputs.password,
       });
-    console.log(updateBoardInput);
+    message.success({ content: "게시물이 수정되었습니다." });
+    router.push(`/boards/${router.query.boardId}`);
 
       // const result = response.data;
       // if (result.message === "비밀번호가 일치하지 않습니다.") {
@@ -182,7 +185,7 @@ export default function BoardRegister(props: IBoardRegisterProps) {
       // router.push(`/boards/${result._id}`);
     } catch (error) {
       if (error instanceof Error) {
-        Modal.warning({ content: error.message });
+        Modal.warning({ content: "비밀번호가 일치하지 않습니다." });
       }
     }
   };
