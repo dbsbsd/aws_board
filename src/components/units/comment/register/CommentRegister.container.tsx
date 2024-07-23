@@ -5,6 +5,10 @@ import axios from "axios";
 import { Modal, message } from "antd";
 
 export default function BoardCommentRegister(props) {
+  const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const boardApi = process.env.NEXT_PUBLIC_BOARD;
+  const commentApi = process.env.NEXT_PUBLIC_COMMENT;
+
   const router = useRouter();
   const boardId = router.query.boardId; // boardId를 쿼리에서 가져옵니다.
 
@@ -43,7 +47,7 @@ export default function BoardCommentRegister(props) {
     }
 
     try {
-      await axios.post(`http://localhost:8181/board/${boardId}/comment`, {
+      await axios.post(`${urlApi}${boardApi}/${boardId}${commentApi}`, {
         nickname: nickname,
         password: password,
         content: content,

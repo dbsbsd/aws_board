@@ -19,6 +19,9 @@ const DEFAULT_VALUE = {
 };
 
 export default function BoardRegister(props: IBoardRegisterProps) {
+  const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const boardApi = process.env.NEXT_PUBLIC_BOARD;
+
   const router = useRouter();
 
   const [inputs, setInputs] = useState<IinputsType>(DEFAULT_VALUE);
@@ -106,7 +109,7 @@ export default function BoardRegister(props: IBoardRegisterProps) {
     }
 
     try {
-      const response = await axios.post("http://localhost:8181/board", {
+      const response = await axios.post(`${urlApi}${boardApi}`, {
         nickname: inputs.nickname,
         password: inputs.password,
         title: inputs.title,
@@ -117,8 +120,7 @@ export default function BoardRegister(props: IBoardRegisterProps) {
         //   addressDetail: inputs.addressDetail,
         // },
         // images: fileUrls,
-      });
-
+      });     
       const result = response.data;
       message.success({ content: "게시물이 등록되었습니다." });
       router.push(`/boards/${result}`);
@@ -168,7 +170,7 @@ export default function BoardRegister(props: IBoardRegisterProps) {
     // if (isChangeFiles) updateBoardInput.images = fileUrls;
 
     try {
-      const response = await axios.patch(`http://localhost:8181/board/${router.query.boardId}`, {
+      const response = await axios.patch(`${urlApi}${boardApi}/${router.query.boardId}`, {
         title: updateBoardInput.title,
         content: updateBoardInput.content,
         password: inputs.password,

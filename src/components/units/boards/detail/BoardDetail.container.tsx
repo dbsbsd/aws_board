@@ -5,6 +5,9 @@ import { message, Modal, Input } from "antd";
 import BoardDetailUI from "./BoardDetail.presenter";
 
 export default function BoardDetail() {
+  const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const boardApi = process.env.NEXT_PUBLIC_BOARD;
+
   const router = useRouter();
   const [boardContent, setBoardContent] = useState<string>("");
   const [boardTitle, setBoardTitle] = useState<string>("");
@@ -23,7 +26,7 @@ export default function BoardDetail() {
   const fetchBoardData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8181/board/${router.query.boardId}`
+        `${urlApi}${boardApi}/${router.query.boardId}`
       );
       const data = response.data;
       setBoardContent(data.content);
@@ -44,7 +47,7 @@ export default function BoardDetail() {
 
   const handleOk = async () => {
     try {
-      await axios.post(`http://localhost:8181/board/${router.query.boardId}`, {
+      await axios.post(`${urlApi}${boardApi}/${router.query.boardId}`, {
         password: password,
       });
       message.success({ content: "게시물이 정상적으로 삭제되었습니다." });

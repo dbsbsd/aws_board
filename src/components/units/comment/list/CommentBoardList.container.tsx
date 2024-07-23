@@ -6,6 +6,10 @@ import BoardCommentRegister from "../register/CommentRegister.container";
 import { message } from "antd"
 
 export default function BoardCommentList({ boardId }: { boardId: string }) {
+  const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const boardApi = process.env.NEXT_PUBLIC_BOARD;
+  const commentApi = process.env.NEXT_PUBLIC_COMMENT;
+
   const router = useRouter();
   const [comments, setComments] = useState<any[]>([]);
 
@@ -15,7 +19,7 @@ export default function BoardCommentList({ boardId }: { boardId: string }) {
 
   const fetchBoardComments = async () => {
     try {
-      const response = await axios.get(`http://localhost:8181/board/${boardId}/comment`);
+      const response = await axios.get(`${urlApi}${boardApi}/${boardId}${commentApi}`);
       setComments(response.data); // 배열로 들어오는 댓글 데이터
     } catch (error) {
       console.error("Error fetching board comments:", error);
@@ -24,7 +28,7 @@ export default function BoardCommentList({ boardId }: { boardId: string }) {
 
   const onDeleteComment = async (commentId: string, password: string) => {
     try {
-      await axios.post(`http://localhost:8181/board/${boardId}/comment/${commentId}`, {
+      await axios.post(`${urlApi}${boardApi}/${boardId}${commentApi}/${commentId}`, {
         password: password,
       });
       fetchBoardComments();
@@ -37,7 +41,7 @@ export default function BoardCommentList({ boardId }: { boardId: string }) {
   const onUpdateComment = async (commentId: string, password: string, content: string) => {
     
     try {
-      await axios.patch(`http://localhost:8181/board/${boardId}/comment/${commentId}`, {
+      await axios.patch(`${urlApi}${boardApi}/${boardId}${commentApi}/${commentId}`, {
         password: password,
         content: content,
       });
